@@ -33,8 +33,7 @@ impl Default for Person {
 // If while parsing the age, something goes wrong, then return the default of Person
 // Otherwise, then return an instantiated Person object with the results
 
-// I AM NOT DONE
-
+// Fuck~~~
 impl From<&str> for Person {
     fn from(s: &str) -> Person {
         if s.is_empty() {
@@ -48,23 +47,34 @@ impl From<&str> for Person {
                     Person::default()
                 }
                 Some(x) => {
-                    let age = xs.next();
-                    match age {
-                        None => {
-                            Person::default()
-                        }
-                        Some(y) => {
-                            let yy = y.parse::<usize>();
-                            match yy {
-                                Err(_) => {
-                                    Person::default()
-                                }
-                                Ok(yyy) => {
-                                    Person {
-                                        age: yyy,
-                                        name: String::from(x),
+                    if x.is_empty() {
+                        Person::default()
+                    } else {
+                        let age = xs.next();
+                        match xs.next() {
+                            None => {
+                                match age {
+                                    None => {
+                                        Person::default()
+                                    }
+                                    Some(y) => {
+                                        let yy = y.parse::<usize>();
+                                        match yy {
+                                            Err(_) => {
+                                                Person::default()
+                                            }
+                                            Ok(yyy) => {
+                                                Person {
+                                                    age: yyy,
+                                                    name: String::from(x),
+                                                }
+                                            }
+                                        }
                                     }
                                 }
+                            }
+                            Some(_) => {
+                                Person::default()
                             }
                         }
                     }
