@@ -47,11 +47,23 @@ impl From<ParseIntError> for ParseClimateError {
 impl From<ParseFloatError> for ParseClimateError {
     fn from(e: ParseFloatError) -> Self {
         // TODO: Complete this function
+        Self::ParseFloat(e)
     }
 }
 
 // TODO: Implement a missing trait so that `main()` below will compile. It
 // is not necessary to implement any methods inside the missing trait.
+
+impl Error for ParseClimateError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        use ParseClimateError::*;
+        match self {
+            ParseFloat(e) => Some(e),
+            ParseInt(e) => Some(e),
+            _ => None,
+        }
+    }
+}
 
 // The `Display` trait allows for other code to obtain the error formatted
 // as a user-visible string.
@@ -62,9 +74,11 @@ impl Display for ParseClimateError {
         // Imports the variants to make the following code more compact.
         use ParseClimateError::*;
         match self {
+            BadLen => write!(f, "bad lenth"),
+            Empty => write!(f, "empty string"),
+            ParseInt(e) => write!(f, "error parsing temperature: {}", e),
             NoCity => write!(f, "no city name"),
             ParseFloat(e) => write!(f, "error parsing temperature: {}", e),
-            _ => write!(f, "unhandled error!"),
         }
     }
 }
@@ -91,7 +105,9 @@ impl FromStr for Climate {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let v: Vec<_> = s.split(',').collect();
         let (city, year, temp) = match &v[..] {
+            ["", _, _] => return Err(ParseClimateError::NoCity),
             [city, year, temp] => (city.to_string(), year, temp),
+            [""] => return Err(ParseClimateError::Empty),
             _ => return Err(ParseClimateError::BadLen),
         };
         let year: u32 = year.parse()?;
@@ -104,6 +120,7 @@ impl FromStr for Climate {
 // tests).
 
 fn main() -> Result<(), Box<dyn Error>> {
+    let x = "Hong Kong,1999,25.7".parse::<Climate>();
     println!("{:?}", "Hong Kong,1999,25.7".parse::<Climate>()?);
     println!("{:?}", "".parse::<Climate>()?);
     Ok(())
